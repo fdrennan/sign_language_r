@@ -20,35 +20,40 @@ dir_name = 'videos'
 
 if(!dir.exists('temp')) dir.create('temp')
 
-if (TRUE) {
-  map(
-    c(
-      'https://www.youtube.com/watch?v=a5BD8SjhPSg',
-      'https://www.youtube.com/watch?v=lYhAAMDQl-Q',
-      'https://www.youtube.com/watch?v=6_gXiBe9y9A',
-      'https://www.youtube.com/watch?v=DCb7yaK1-q4',
-      'https://www.youtube.com/watch?v=csBb71UPN8E'
-    ),
-    ~ grab_video(link = ., name = ., dir_name = dir_name)
+video_urls =
+  c(
+    'https://www.youtube.com/watch?v=a5BD8SjhPSg',
+    'https://www.youtube.com/watch?v=lYAAMDQl-Q',
+    'https://www.youtube.com/watch?v=6_gXiBe9y9A',
+    'https://www.youtube.com/watch?v=DCb7yaK1-q4',
+    'https://www.youtube.com/watch?v=csBb71UPN8E'
   )
 
-}
+tags = str_remove(video_urls, ".*=")
 
-mpg_files <- file.path(dir_name, list.files(dir_name))
-
-mpg_data <-
-  mpg_files[[1]] %>%
-  load.video(frames=10,
-             verbose = TRUE)
-
-n_images <- dim(mpg_data)[3]
-
-for(i in 1:n_images) {
-  save.image(
-    as.cimg(mpg_data[,,i,],dim = dim(mpg_data)[c(1, 2, 4)]),
-    file.path('temp', paste0('image', i, '.jpg'))
+if (FALSE) {
+  map2(
+    video_urls,
+    tags,
+    function(link, tag) {
+      grab_video(link = link, name = tag, dir_name = dir_name)
+    }
   )
 }
+
+
+create_photos <- function(filename, sep = 5) {
+  save_to = file.path('temp', filename)
+  unlink(save_to, recursive=TRUE)
+  dir.create(save_to)
+  command = paste0(
+    'ffmpeg -i videos/', filename, '.mp4 -r ', sep, ' ', save_to, '/output_%04d.png'
+  )
+  system(command)
+}
+
+map(tags, create_photos)
+
 
 
 
